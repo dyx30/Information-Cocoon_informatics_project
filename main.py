@@ -9,6 +9,7 @@ import numpy as np
 
 1.随机初始化一个概率向量P=[1  2  3  4  5  6  7  8]
                       [A1 A2 B1 B2 C1 D1 D2 D3]
+                      
   随机初始化一个转移矩阵J（8*8）
   算一次熵（按照类别计算）
 2.第一次推荐：
@@ -23,13 +24,15 @@ import numpy as np
 K=3
 '''
 
-label={"a":-1,"b":-1,"c":-1}  #代表三个选项分别对应的小类标签
+label={"a":-1,"b":-1,"c":-1}  #代表三个选项分别对应的大类标签
 
 transmat = np.random.rand(8, 8)
 
+cls_relation=[[0,1],[2,3],[4],[5,6,7]] # 大类小类关系列表
 
+idxes = [1 for i in range(8)] #每个小类图片的索引
 
-def recommend(P):
+def recommend(P,indexes,k=3):
     """
     param:向量P,每个小类样本推荐的概率
         维护一个待推荐样本序列（矩阵），矩阵的每一列代表各小类待推荐的样本（index%len来做）
@@ -41,17 +44,17 @@ def recommend(P):
     return
 
 
-def query():
+def query(lb:list):
     """
     请求用户从abc中选择一个，读取一个字符输入
     如果读到z，返回-1
-    :return: 对应的大类（int）
+    :return: 对应的小类int
     """
 
 def mat_step(cls:int)->None:
     """
-    根据需要提高权重的大类cls来修改mat，并作归一化
-    :param cls: 需要提高权重的大类
+    根据需要提高权重的小类cls来修改mat，并作归一化
+    :param cls: 需要提高权重的小类
     :return: None
     """
     global transmat

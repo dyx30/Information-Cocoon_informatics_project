@@ -42,7 +42,7 @@ K=3
 label={"a":-1,"b":-1,"c":-1}  #代表三个选项分别对应的大类标签
 
 transmat = np.random.rand(8, 8)
-# transmat = np.ones((8, 8))
+transmat = np.ones((8, 8))
 for i in range(8):
     norm=np.sum(transmat[i,:])
     for j in range(8):
@@ -58,12 +58,12 @@ P=np.random.rand(8)
 s=np.sum(P)
 for i in range(8):
     P[i]/=s
-P0=[1/8,1/8,1/8,1/8,1/4,1/12,1/12,1/12]
+P0=[1/8,1/8,1/8,1/8,1/8,1/8,1/8,1/8]
 P=P0
 
-for i in range(8):
-    for j in range(8):
-        transmat[i][j]=P[j]
+# for i in range(8):
+#     for j in range(8):
+#         transmat[i][j]=P[j]
 
 #recommend
 
@@ -228,14 +228,18 @@ def mat_step(cls):
         for j in range(8):
             if j==cls:
                 if i==cls:
-                    transmat[i][j]+=0.2*2/(Count[j]+1)
+                    transmat[i][j]*=1+0.8*2/(Count[j]+1)
+                    # transmat[i][j]+=0.2*2/(Count[j]+1)
                 else:
-                    transmat[i][j]+=0.1*2/(Count[j]+1)
+                    transmat[i][j]*=1+0.5*2/(Count[j]+1)
+                    # transmat[i][j]+=0.1*2/(Count[j]+1)
             elif Type[j]==Type[cls]:
                 if i==cls:
-                    transmat[i][j]+=0.2/(Count[j]+1)
+                    transmat[i][j]*=1+0.8/(Count[j]+1)
+                    # transmat[i][j]+=0.2/(Count[j]+1)
                 else:
-                    transmat[i][j]+=0.1/(Count[j]+1)
+                    transmat[i][j]*=1+0.5/(Count[j]+1)
+                    # transmat[i][j]+=0.1/(Count[j]+1)
     for i in range(8):
         norm=np.sum(transmat[i,:])
         for j in range(8):
@@ -255,7 +259,7 @@ def cal_entro(P):
         p[Type[i]]+=P[i]
 
     entro=0
-    for i in p:
+    for i in P:
         if i==0:
             continue
         entro-=i*math.log2(i)
@@ -267,10 +271,13 @@ def cal_entro(P):
 def entro_plot(x):
     #熵变化作图
     
-    plt.plot(x)
+    plt.plot(x,linewidth=3)
     plt.title('Trend of entropy change')
     plt.xlabel('Iterations')
     plt.ylabel('Entropy / bit')
+    plt.xticks(fontsize=15)
+    plt.yticks(fontsize=15)
+    plt.ylim(0,3)
     plt.show()
 
 def random_choose():
@@ -312,6 +319,7 @@ def main():
         lb=query(label)
         # lb=random_choose2()
         # lb=random_choose()
+        # lb=random.choice([0,5])
         # print(lb)
         # lb=random.choice([0,3])
         # if random.random()>0.7:
@@ -321,8 +329,10 @@ def main():
         mat_step(lb)
         P=P@transmat
         entrolist.append(cal_entro(P))
-
+    
     print(entrolist)
+    print(P)
+    print(transmat)
     entro_plot(entrolist)
 
 main()

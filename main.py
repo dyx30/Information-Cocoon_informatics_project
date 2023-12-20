@@ -42,11 +42,12 @@ K=3
 label={"a":-1,"b":-1,"c":-1}  #代表三个选项分别对应的大类标签
 
 transmat = np.random.rand(8, 8)
+# transmat = np.ones((8, 8))
 for i in range(8):
     norm=np.sum(transmat[i,:])
     for j in range(8):
         transmat[i][j]/=norm
-
+        
 cls_relation=[[0,1],[2,3],[4],[5,6,7]] # 大类小类关系列表
 Type=[0,0,1,1,2,3,3,3]
 Count=[2,2,2,2,1,3,3,3]
@@ -57,8 +58,12 @@ P=np.random.rand(8)
 s=np.sum(P)
 for i in range(8):
     P[i]/=s
+P0=[1/8,1/8,1/8,1/8,1/4,1/12,1/12,1/12]
+P=P0
+
 for i in range(8):
-    P[i]=0.125
+    for j in range(8):
+        transmat[i][j]=P[j]
 
 #recommend
 
@@ -76,7 +81,9 @@ def random_select_indices(P, K):
     normalized_probabilities = [prob / sum(P) for prob in P]
 
     # 使用numpy.random.choice进行随机选择，replace=False表示不重复选择
+    # global P0
     selected_indices = np.random.choice(range(len(P)), size=K, replace=False, p=normalized_probabilities)
+    # selected_indices = np.random.choice(range(len(P)), size=K, replace=False,p=P0)
 
     return selected_indices
 
@@ -154,6 +161,11 @@ def show_images(imgs):
         # 标注字母在图片下方微调位置并调大字号
         ax.text(width / 2, height + 80, alphabet[i], fontsize=48, color='black', ha='center')
 
+    global P
+    plt.subplot(1,3,2)
+    entrop=cal_entro(P)
+    t="Current entropy="+'%.5lf'%entrop
+    plt.text(-200,-80,t,fontsize=30)
     # 展示所有图片
     plt.show()
 
@@ -210,13 +222,20 @@ def mat_step(cls):
     """
 
     global transmat
+    global Count
 
     for i in range(8):
         for j in range(8):
             if j==cls:
-                transmat[i][j]*=1.5
+                if i==cls:
+                    transmat[i][j]+=0.2*2/(Count[j]+1)
+                else:
+                    transmat[i][j]+=0.1*2/(Count[j]+1)
             elif Type[j]==Type[cls]:
-                transmat[i][j]*=1.2
+                if i==cls:
+                    transmat[i][j]+=0.2/(Count[j]+1)
+                else:
+                    transmat[i][j]+=0.1/(Count[j]+1)
     for i in range(8):
         norm=np.sum(transmat[i,:])
         for j in range(8):
@@ -254,6 +273,22 @@ def entro_plot(x):
     plt.ylabel('Entropy / bit')
     plt.show()
 
+def random_choose():
+    global label
+    c=random.choice(['a','b','c'])
+    # print(c)
+    return label[c]
+def random_choose2():
+    global label
+    [a,b,c]=[label['a'],label['b'],label['c']]
+    if random.random()>1:
+        return random.choice([a,b,c])
+    if P[a]>P[b] and P[a]>P[c]:
+        return a
+    elif P[b]>P[c]:
+        return b
+    return c
+
 #main
 
 def main():
@@ -263,7 +298,8 @@ def main():
     global transmat
 
     entrolist=[cal_entro(P)]
-    for _ in range(50):
+    for _ in range(100):
+        print(transmat)
         '''
         # 展示转移矩阵和熵cal_entro,并将新熵加入列表entrolist
         # comment
@@ -272,11 +308,14 @@ def main():
         '''''
         # print(P)
         # print(transmat)
-        # recommend(P,idxes)
-        # lb=query(label)
-        lb=0
-        if random.random()>0.7:
-            lb=random.randint(1,7)
+        recommend(P,idxes)
+        lb=query(label)
+        # lb=random_choose2()
+        # lb=random_choose()
+        # print(lb)
+        # lb=random.choice([0,3])
+        # if random.random()>0.7:
+        #     lb=random.randint(1,7)
         if lb==-1:
             break
         mat_step(lb)
